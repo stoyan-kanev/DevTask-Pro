@@ -22,7 +22,8 @@ class RegisterView(CreateAPIView):
             email_errors = serializer.errors.get('email', [])
             if any("already exists" in str(e).lower() for e in email_errors):
                 return Response({'error': 'Profile with that email already exists'}, status=status.HTTP_400_BAD_REQUEST)
-            return Response({'error': 'Error while parsing data'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Invalid input', 'details': serializer.errors},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         user = serializer.save()
 
@@ -33,12 +34,7 @@ class RegisterView(CreateAPIView):
         refresh_exp = now() + timedelta(days=7)
 
         response = Response({
-            "user": {
-                "id": user.id,
-                "email": user.email,
-                "first_name": user.first_name,
-                "last_name": user.last_name,
-            }
+            "user": RegisterUserSerializer(user).data
         }, status=status.HTTP_201_CREATED)
 
         # Access Token cookie
@@ -111,3 +107,24 @@ class LoginView(APIView):
         return response
 
 
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            refresh_token = request.COOKIES.get("refresh_token")
+            if not refresh_token:
+                return Response({"error": "No refresh token found in cookies"}, status=status.HTTP_400_BAD_REQUEST)
+
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+
+            response = Response({"message": "Logout successful"}, status=status.HTTP_205_RESET_CONTENT)
+
+            response.delete_cookie("access_token")
+            response.delete_cookie("refresh_token")
+
+            return response
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
