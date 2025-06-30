@@ -1,6 +1,9 @@
 import re
 
+from django.contrib.auth import authenticate
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from users.models import CustomUser
 
@@ -33,3 +36,19 @@ class RegisterUserSerializer(serializers.ModelSerializer):
             user.is_active = True
             user.save()
             return user
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        email = attrs.get("email")
+        password = attrs.get("password")
+
+        user = authenticate(email=email, password=password)
+
+        if user is None or not user.is_active:
+            raise serializers.ValidationError({"non_field_errors": ["Invalid email or password."]})
+
+        refresh = RefreshToken.for_user(user)
+        return {
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+        }

@@ -3,13 +3,14 @@ from datetime import timedelta
 from django.utils.timezone import now
 from rest_framework import status
 from rest_framework.generics import CreateAPIView
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
 
-from users.serializers import RegisterUserSerializer
+from users.models import CustomUser
+from users.serializers import RegisterUserSerializer, MyTokenObtainPairSerializer
 
 
 class RegisterView(CreateAPIView):
@@ -62,5 +63,51 @@ class RegisterView(CreateAPIView):
 
         return response
 
+
+
+class LoginView(APIView):
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
+        serializer = MyTokenObtainPairSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        refresh = serializer.validated_data["refresh"]
+        access = serializer.validated_data["access"]
+
+        user = CustomUser.objects.get(email=request.data["email"])
+
+        access_exp = now() + timedelta(minutes=15)
+        refresh_exp = now() + timedelta(days=7)
+
+        response = Response({
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "role": user.role
+            }
+        }, status=status.HTTP_200_OK)
+
+        response.set_cookie(
+            key='access_token',
+            value=str(access),
+            expires=access_exp,
+            httponly=True,
+            secure=not request.get_host().startswith("localhost"),
+            samesite="Lax"
+        )
+
+        response.set_cookie(
+            key='refresh_token',
+            value=str(refresh),
+            expires=refresh_exp,
+            httponly=True,
+            secure=not request.get_host().startswith("localhost"),
+            samesite="Lax"
+        )
+
+        return response
 
 
