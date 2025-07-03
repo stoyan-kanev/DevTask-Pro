@@ -34,6 +34,17 @@ export async function loginApi(email: string, password: string) {
     return response.data;
 }
 
+export async function registerApi(email: string, firstName: string, lastName: string, password: string) {
+    const response = await axiosInstance.post(`${API_URL}/register/`, {
+        email,
+        first_name: firstName,
+        last_name:lastName,
+        password,
+
+    }, {withCredentials: true});
+    return response.data;
+}
+
 export async function logoutApi() {
     const response = await axiosInstance.post(`${API_URL}/logout/`, {}, {withCredentials: true});
     return response.data;

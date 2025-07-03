@@ -5,6 +5,7 @@ import App from './App.tsx'
 import {BrowserRouter, Route, Routes} from "react-router-dom";
 import LoginComponent from "./components/LoginComponent/LoginComponent.tsx";
 import {AuthProvider} from "./context/AuthContext.tsx";
+import RegisterComponent from "./components/RegisterComponent/RegisterComponent.tsx";
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -13,6 +14,7 @@ createRoot(document.getElementById('root')!).render(
               <Routes>
                   <Route path="/" element={<App/>} />
                   <Route path="/login" element={<LoginComponent/>} />
+                  <Route path="/register" element={<RegisterComponent/>} />
               </Routes>
           </AuthProvider>
 
