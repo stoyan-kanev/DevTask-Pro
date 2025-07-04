@@ -6,11 +6,13 @@ import {BrowserRouter, Route, Routes} from "react-router-dom";
 import LoginComponent from "./components/LoginComponent/LoginComponent.tsx";
 import {AuthProvider} from "./context/AuthContext.tsx";
 import RegisterComponent from "./components/RegisterComponent/RegisterComponent.tsx";
+import NavBarComponent from "./components/NavBarComponent/NavBarComponent.tsx";
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
       <BrowserRouter>
           <AuthProvider>
+              <NavBarComponent/>
               <Routes>
                   <Route path="/" element={<App/>} />
                   <Route path="/login" element={<LoginComponent/>} />

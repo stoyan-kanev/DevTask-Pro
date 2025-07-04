@@ -141,7 +141,34 @@ class MeView(APIView):
             "last_name": user.last_name,
         })
 
+class RefreshAccessTokenView(APIView):
 
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        refresh_token = request.COOKIES.get("refresh_token")
+        if not refresh_token:
+            return Response({"error": "Refresh token not found in cookies"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            refresh = RefreshToken(refresh_token)
+            new_access = refresh.access_token
+            access_exp = now() + timedelta(minutes=15)
+
+            response = Response({"message": "Access token refreshed"}, status=status.HTTP_200_OK)
+            response.set_cookie(
+                key='access_token',
+                value=str(new_access),
+                expires=access_exp,
+                httponly=True,
+                secure=not request.get_host().startswith("localhost"),
+                samesite="Lax"
+            )
+            return response
+        except Exception as e:
+            response = Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            response.delete_cookie("access_token")
+            return response
 
 class UpdateProfileView(APIView):
     permission_classes = [IsAuthenticated]

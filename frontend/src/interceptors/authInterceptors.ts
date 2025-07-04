@@ -19,6 +19,8 @@ axiosInstance.interceptors.response.use(
             : `${originalRequest.baseURL || axiosInstance.defaults.baseURL}${originalRequest.url}`;
         const url = new URL(rawUrl).pathname;
 
+
+        // Paths are from other app component interceptor they will be changed according to the propper paths for this project
         const publicEndpointPrefixes = [
             '/job/jobs',
             '/job/search',
@@ -29,15 +31,15 @@ axiosInstance.interceptors.response.use(
             url.startsWith(prefix)
         );
 
-        const publicFrontendPaths = [
-            '/',
-            '/job/jobs',
-            '/job/search',
-            '/jobs',
-        ];
-        const isOnPublicFrontend = publicFrontendPaths.some(path =>
-            window.location.pathname.startsWith(path)
-        );
+        // const publicFrontendPaths = [
+        //     '/',
+        //     '/job/jobs',
+        //     '/job/search',
+        //     '/jobs',
+        // ];
+        // const isOnPublicFrontend = publicFrontendPaths.some(path =>
+        //     window.location.pathname.startsWith(path)
+        // );
 
         if (isAuthError && isRetryable && isNotRefreshEndpoint && !isPublicEndpoint) {
             originalRequest._retry = true;
@@ -45,7 +47,8 @@ axiosInstance.interceptors.response.use(
                 await axiosInstance.post('/users/refresh-token/', {}, { withCredentials: true });
                 return axiosInstance(originalRequest);
             } catch (refreshError) {
-                if (!isOnPublicFrontend && window.location.pathname !== '/login') {
+                if (window.location.pathname !== '/login') {
+                    // Add isOnPublicFrontend to check for valid paths if needed
                     window.location.href = '/login';
                 }
                 return Promise.reject(refreshError);
