@@ -1,0 +1,79 @@
+.landing-wrapper {
+    min-height: calc(100vh - 0px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    flex-direction: column;
+}
+
+.landing-content {
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+}
+.why-list li{
+    list-style: none;
+}
+.landing-highlight {
+    color: var(--color-accent);
+}
+
+.landing-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+/* Sections */
+.hero-section,
+.testimonials-section,
+.why-section {
+    background-color: var(--color-card);
+    border-radius: var(--radius);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+/* Features */
+.feature-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.feature-box {
+    flex: 1 1 250px;
+    min-width: 250px;
+    max-width: 300px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.feature-box h3 {
+    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+    color: var(--color-accent);
+}
+
+.feature-box p {
+    font-size: 0.95rem;
+}
+
+/* Testimonials */
+.testimonial-cards {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.testimonial-card {
+    max-width: 300px;
+    padding: 1rem;
+    font-style: italic;
+    text-align: center;
+}

@@ -31,24 +31,21 @@ axiosInstance.interceptors.response.use(
             url.startsWith(prefix)
         );
 
-        // const publicFrontendPaths = [
-        //     '/',
-        //     '/job/jobs',
-        //     '/job/search',
-        //     '/jobs',
-        // ];
-        // const isOnPublicFrontend = publicFrontendPaths.some(path =>
-        //     window.location.pathname.startsWith(path)
-        // );
+        const publicFrontendPaths = [
+            '/',
+        ];
+        const isOnPublicFrontend = publicFrontendPaths.some(path =>
+            window.location.pathname.startsWith(path)
+        );
 
-        if (isAuthError && isRetryable && isNotRefreshEndpoint && !isPublicEndpoint) {
+        if (isAuthError && isRetryable && isNotRefreshEndpoint && !isPublicEndpoint && !isOnPublicFrontend
+        ) {
             originalRequest._retry = true;
             try {
                 await axiosInstance.post('/users/refresh-token/', {}, { withCredentials: true });
                 return axiosInstance(originalRequest);
             } catch (refreshError) {
-                if (window.location.pathname !== '/login') {
-                    // Add isOnPublicFrontend to check for valid paths if needed
+                if (isOnPublicFrontend && window.location.pathname !== '/login') {
                     window.location.href = '/login';
                 }
                 return Promise.reject(refreshError);
