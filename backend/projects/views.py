@@ -20,16 +20,19 @@ class ProjectApiView(APIView):
     def post(self, request):
         serializer = ProjectSerializer(data=request.data)
         if serializer.is_valid():
-
+            serializer.save(owner=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request):
         project_id = request.data.get('id')
-        try:
-            project = Project.objects.get(id=project_id)
-        except Project.DoesNotExist:
-            return Response({"error": "Project not found."}, status=404)
+        if not project_id:
+            return Response({"error": "Missing project ID."}, status=400)
+
+        project = get_object_or_404(Project, id=project_id)
+
+        if project.owner != request.user:
+            return Response({"error": "You do not have access to this project."}, status=403)
 
         serializer = ProjectSerializer(project, data=request.data, partial=True)
         if serializer.is_valid():
@@ -39,13 +42,13 @@ class ProjectApiView(APIView):
 
     def delete(self, request):
         project_id = request.data.get('id')
-        try:
-            project = Project.objects.get(id=project_id)
-        except Project.DoesNotExist:
-            return Response({"error": "Project not found."}, status=404)
-        is_owner = Project.objects.filter(user=request.user, project=project, owner=request.user.id).first()
+        if not project_id:
+            return Response({"error": "Missing project ID."}, status=400)
 
-        if not is_owner:
-            return Response({"error": "Only admins can delete this project."}, status=403)
+        project = get_object_or_404(Project, id=project_id)
+
+        if project.owner != request.user:
+            return Response({"error": "Only the owner can delete this project."}, status=403)
+
         project.delete()
-        return Response({"detail": "Project deleted."}, status=204)
+        return Response(status=status.HTTP_204_NO_CONTENT)

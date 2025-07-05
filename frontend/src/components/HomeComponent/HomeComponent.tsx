@@ -11,8 +11,10 @@ export default function HomeComponent() {
     // Logged user home component
     if (user) {
         return (
-            <div className="main-wraper">
+            <div className="main-wrapper">
                 <div className="sidebar-wrapper">
+                    <button>Add Project</button>
+
 
                 </div>
                 <div className="content-wrapper">
