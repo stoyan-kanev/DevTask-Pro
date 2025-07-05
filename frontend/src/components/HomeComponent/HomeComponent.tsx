@@ -43,13 +43,14 @@ export default function HomeComponent() {
         return (
             <div className="main-wrapper">
                 <div className="sidebar-wrapper">
-                    <button>Add Project</button>
+                    <button className="add-project-btn">Add Project</button>
+                    <hr className="project-separator" />
                     {projects?.length === 0 ? (
                         <p>No projects found</p>
                     ) : (
-                        <ul>
+                        <ul className="projects">
                             {projects.map((project) => (
-                                <Link to={String(project.id)} key={project.id}>{project.name}</Link>
+                                <button key={project.id}>{project.name}</button>
                             ))}
                         </ul>
                     )}
