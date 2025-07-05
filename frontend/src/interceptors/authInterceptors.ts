@@ -17,33 +17,31 @@ axiosInstance.interceptors.response.use(
         const rawUrl = originalRequest.url.startsWith('http')
             ? originalRequest.url
             : `${originalRequest.baseURL || axiosInstance.defaults.baseURL}${originalRequest.url}`;
-        const url = new URL(rawUrl).pathname;
+        const urlPathname = new URL(rawUrl).pathname;
 
-
-        const publicEndpointPrefixes = [
+        const publicBackendEndpoints = [
+            '/',
             '/job/jobs',
             '/job/search',
             '/job/applications/status',
         ];
 
-        const isPublicEndpoint = publicEndpointPrefixes.some(prefix =>
-            url.startsWith(prefix)
+        const isPublicBackendRequest = publicBackendEndpoints.some(prefix =>
+            urlPathname === prefix || urlPathname.startsWith(prefix + '/')
         );
 
-        const publicFrontendPaths = [
-            '/',
-        ];
-        const isOnPublicFrontend = publicFrontendPaths.some(path =>
-            window.location.pathname.startsWith(path)
-        );
-
-        if (isAuthError && isRetryable && isNotRefreshEndpoint && !isPublicEndpoint) {
+        if (isAuthError && isRetryable && isNotRefreshEndpoint && !isPublicBackendRequest) {
             originalRequest._retry = true;
             try {
                 await axiosInstance.post('/users/refresh-token/', {}, { withCredentials: true });
                 return axiosInstance(originalRequest);
             } catch (refreshError) {
-                if (isOnPublicFrontend && window.location.pathname !== '/login') {
+                const publicFrontendPaths = ['/', '/register'];
+                const isOnPublicFrontend = publicFrontendPaths.some(path =>
+                    window.location.pathname === path || window.location.pathname.startsWith(path + '/')
+                );
+
+                if (!isOnPublicFrontend && window.location.pathname !== '/login') {
                     window.location.href = '/login';
                 }
                 return Promise.reject(refreshError);

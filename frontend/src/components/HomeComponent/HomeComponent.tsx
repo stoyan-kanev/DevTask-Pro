@@ -1,12 +1,42 @@
 import {useAuth} from "../../context/AuthContext.tsx";
 import {Link} from "react-router-dom";
 import './HomeComponent.css'
+import {useEffect, useState} from "react";
+import {getProjects} from "../../api/projectsApi.tsx";
 
+type Project = {
+    id: number;
+    name: string;
+    created_at: string;
+    owner:number;
+};
 
 export default function HomeComponent() {
 
 
     const {user} = useAuth()
+    const [projects, setProjects] = useState<Project[]>([]);
+
+    useEffect(() => {
+        const loadProjects = async () => {
+            try {
+                const res = await getProjects();
+
+                if (Array.isArray(res)) {
+                    setProjects(res);
+                } else {
+                    console.error("Unexpected response from getProjects:", res);
+                    setProjects([]);
+                }
+
+            } catch (error) {
+                console.error("Failed to load projects:", error);
+                setProjects([]);
+            }
+        };
+
+        loadProjects();
+    }, []);
 
     // Logged user home component
     if (user) {
@@ -14,7 +44,15 @@ export default function HomeComponent() {
             <div className="main-wrapper">
                 <div className="sidebar-wrapper">
                     <button>Add Project</button>
-
+                    {projects?.length === 0 ? (
+                        <p>No projects found</p>
+                    ) : (
+                        <ul>
+                            {projects.map((project) => (
+                                <Link to={String(project.id)} key={project.id}>{project.name}</Link>
+                            ))}
+                        </ul>
+                    )}
 
                 </div>
                 <div className="content-wrapper">
