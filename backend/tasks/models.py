@@ -1,5 +1,6 @@
 from django.db import models
 
+from projects.models import Project
 from users.models import CustomUser
 
 class Task(models.Model):
@@ -30,4 +31,6 @@ class Task(models.Model):
     )
     due_date = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
+
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tasks',default=None)

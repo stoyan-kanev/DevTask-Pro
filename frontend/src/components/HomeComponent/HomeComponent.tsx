@@ -8,18 +8,22 @@ export default function HomeComponent() {
 
     const {user} = useAuth()
 
-
+    // Logged user home component
     if (user) {
         return (
-            <div className="landing-wrapper">
-                <div className="landing-content card text-center">
-                    <h1>Welcome back!</h1>
-                    <p className="mt-2">Your dashboard will appear here soon.</p>
+            <div className="main-wraper">
+                <div className="sidebar-wrapper">
+
+                </div>
+                <div className="content-wrapper">
+
                 </div>
             </div>
         );
     }
 
+
+    // Non logged user home component
     return (
         <div className="landing-wrapper">
             <div className="landing-content">

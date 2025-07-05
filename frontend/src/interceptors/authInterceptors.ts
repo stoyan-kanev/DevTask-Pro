@@ -20,7 +20,6 @@ axiosInstance.interceptors.response.use(
         const url = new URL(rawUrl).pathname;
 
 
-        // Paths are from other app component interceptor they will be changed according to the propper paths for this project
         const publicEndpointPrefixes = [
             '/job/jobs',
             '/job/search',
@@ -38,8 +37,7 @@ axiosInstance.interceptors.response.use(
             window.location.pathname.startsWith(path)
         );
 
-        if (isAuthError && isRetryable && isNotRefreshEndpoint && !isPublicEndpoint && !isOnPublicFrontend
-        ) {
+        if (isAuthError && isRetryable && isNotRefreshEndpoint && !isPublicEndpoint) {
             originalRequest._retry = true;
             try {
                 await axiosInstance.post('/users/refresh-token/', {}, { withCredentials: true });
