@@ -7,13 +7,16 @@ from rest_framework.views import APIView
 from projects.models import Project
 from projects.serializers import ProjectSerializer
 
+from uuid import UUID
+
+
 
 class ProjectApiView(APIView):
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        projects = Project.objects.filter(members=request.user)
+        projects = Project.objects.filter(owner=request.user)
         serializer = ProjectSerializer(projects, many=True)
         return Response(serializer.data)
 
@@ -29,7 +32,12 @@ class ProjectApiView(APIView):
         if not project_id:
             return Response({"error": "Missing project ID."}, status=400)
 
-        project = get_object_or_404(Project, id=project_id)
+        try:
+            uuid_obj = UUID(project_id)
+        except ValueError:
+            return Response({"error": "Invalid project ID format."}, status=400)
+
+        project = get_object_or_404(Project, id=uuid_obj)
 
         if project.owner != request.user:
             return Response({"error": "You do not have access to this project."}, status=403)
@@ -45,7 +53,12 @@ class ProjectApiView(APIView):
         if not project_id:
             return Response({"error": "Missing project ID."}, status=400)
 
-        project = get_object_or_404(Project, id=project_id)
+        try:
+            uuid_obj = UUID(project_id)
+        except ValueError:
+            return Response({"error": "Invalid project ID format."}, status=400)
+
+        project = get_object_or_404(Project, id=uuid_obj)
 
         if project.owner != request.user:
             return Response({"error": "Only the owner can delete this project."}, status=403)
