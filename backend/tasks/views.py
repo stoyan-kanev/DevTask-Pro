@@ -12,8 +12,8 @@ class TaskApiView(APIView):
     serializer_class = TaskSerializer
 
 
-    def get(self, request):
-        tasks = Task.objects.filter(user=request.user)
+    def get(self, request,project_id=None):
+        tasks = Task.objects.filter(project_id=project_id)
         serializer = self.serializer_class(tasks, many=True)
         return Response(serializer.data)
 
