@@ -1,8 +1,9 @@
 import {useAuth} from "../../context/AuthContext.tsx";
-import {Link} from "react-router-dom";
+import {Link, useNavigate, useParams} from "react-router-dom";
 import './HomeComponent.css'
 import {useEffect, useState} from "react";
 import {getProjects} from "../../api/projectsApi.tsx";
+import {getTasks} from "../../api/taskApi.tsx";
 
 type Project = {
     id: number;
@@ -11,11 +12,28 @@ type Project = {
     owner:number;
 };
 
+type Task = {
+    id: number;
+    title: string;
+    description: string;
+    status: string;
+    priority:string;
+    due_date: string;
+    created_at: string;
+    project_id: number;
+
+}
+
 export default function HomeComponent() {
 
 
     const {user} = useAuth()
+    const { projectId } = useParams()
+    const navigate = useNavigate();
     const [projects, setProjects] = useState<Project[]>([]);
+    const [tasks, setTasks] = useState<Task[]>([]);
+
+
 
     useEffect(() => {
         const loadProjects = async () => {
@@ -38,26 +56,51 @@ export default function HomeComponent() {
         loadProjects();
     }, []);
 
+    useEffect(() => {
+        const loadTasks = async () => {
+            if (!projectId) return;
+
+            try {
+                const res = await getTasks(projectId);
+                // const data = await res;
+                console.log(res)
+                setTasks(res);
+            } catch (err) {
+                console.error("Error loading tasks:", err);
+            }
+        };
+
+        loadTasks();
+    }, [projectId]);
+
+    const onClickProjectBtn = (id: number) => {
+        navigate(`/project/${id}`);
+    };
+
     // Logged user home component
     if (user) {
         return (
             <div className="main-wrapper">
                 <div className="sidebar-wrapper">
-                    <button className="add-project-btn">Add Project</button>
+                    <button className="add-project-btn">Add Tracker</button>
                     <hr className="project-separator" />
                     {projects?.length === 0 ? (
                         <p>No projects found</p>
                     ) : (
                         <ul className="projects">
                             {projects.map((project) => (
-                                <button key={project.id}>{project.name}</button>
+                                <button onClick={()=>onClickProjectBtn(project.id)} key={project.id}>{project.name}</button>
                             ))}
                         </ul>
                     )}
 
                 </div>
                 <div className="content-wrapper">
-
+                    {tasks?.map((task) => (
+                        <ul>
+                            <li key={task.id}>{task.title}</li>
+                        </ul>
+                    ))}
                 </div>
             </div>
         );

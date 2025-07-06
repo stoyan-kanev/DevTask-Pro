@@ -15,6 +15,7 @@ createRoot(document.getElementById('root')!).render(
               <NavBarComponent/>
               <Routes>
                   <Route path="/" element={<HomeComponent/>} />
+                  <Route path="/project/:projectId" element={<HomeComponent />} />
                   <Route path="/login" element={<LoginComponent/>} />
                   <Route path="/register" element={<RegisterComponent/>} />
               </Routes>
