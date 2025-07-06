@@ -2,14 +2,14 @@ import {useAuth} from "../../context/AuthContext.tsx";
 import {Link, useNavigate, useParams} from "react-router-dom";
 import './HomeComponent.css'
 import {useEffect, useState} from "react";
-import {getProjects} from "../../api/projectsApi.tsx";
+import {createProject, getProjects} from "../../api/projectsApi.tsx";
 import {getTasks} from "../../api/taskApi.tsx";
 
 type Project = {
     id: number;
     name: string;
     created_at: string;
-    owner:number;
+    owner: number;
 };
 
 type Task = {
@@ -17,7 +17,7 @@ type Task = {
     title: string;
     description: string;
     status: string;
-    priority:string;
+    priority: string;
     due_date: string;
     created_at: string;
     project_id: number;
@@ -28,12 +28,13 @@ export default function HomeComponent() {
 
 
     const {user} = useAuth()
-    const { projectId } = useParams()
+    const {projectId} = useParams()
     const navigate = useNavigate();
     const [projects, setProjects] = useState<Project[]>([]);
     const [tasks, setTasks] = useState<Task[]>([]);
 
-
+    const [showModal, setShowModal] = useState(false);
+    const [newProjectName, setNewProjectName] = useState("");
 
     useEffect(() => {
         const loadProjects = async () => {
@@ -82,26 +83,69 @@ export default function HomeComponent() {
         return (
             <div className="main-wrapper">
                 <div className="sidebar-wrapper">
-                    <button className="add-project-btn">Add Tracker</button>
-                    <hr className="project-separator" />
+                    <button className="add-project-btn" onClick={() => setShowModal(true)}>
+                        Add Tracker
+                    </button>
+                    <hr className="project-separator"/>
                     {projects?.length === 0 ? (
                         <p>No projects found</p>
                     ) : (
                         <ul className="projects">
+                            <p className={'tracker-title'}>Trackers</p>
+
                             {projects.map((project) => (
-                                <button onClick={()=>onClickProjectBtn(project.id)} key={project.id}>{project.name}</button>
+                                <button onClick={() => onClickProjectBtn(project.id)}
+                                        key={project.id}>{project.name}</button>
                             ))}
                         </ul>
                     )}
 
                 </div>
-                <div className="content-wrapper">
-                    {tasks?.map((task) => (
+
+                {showModal && (
+                    <div className="modal-overlay">
+                        <div className="modal">
+                            <h2 className='modal-title'>Create New Tracker</h2>
+                            <input
+                                type="text"
+                                placeholder="Enter tracker name"
+                                value={newProjectName}
+                                onChange={(e) => setNewProjectName(e.target.value)}
+                            />
+                            <div className="modal-actions">
+                                <button onClick={() => setShowModal(false)}>Cancel</button>
+                                <button onClick={async () => {
+                                    try {
+                                        const created = await createProject({ name: newProjectName });
+                                        setProjects(prev => [...prev, created]);
+                                        setNewProjectName("");
+                                        setShowModal(false);
+                                    } catch (err) {
+                                        console.error("Failed to create project", err);
+                                    }
+                                }}>Create</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+
+                {projectId ? (
+                    <div className="content-wrapper">
                         <ul>
-                            <li key={task.id}>{task.title}</li>
+
+                            {tasks?.map((task) => (
+                                <li key={task.id}>
+                                    <strong>{task.title}</strong> — {task.status}
+                                </li>
+                            ))}
                         </ul>
-                    ))}
-                </div>
+                    </div>
+                ) : (
+                    <p>Home content will be here for not selected project</p>
+                )}
+
+
             </div>
         );
     }

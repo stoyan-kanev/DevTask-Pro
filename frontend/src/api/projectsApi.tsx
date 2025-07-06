@@ -24,3 +24,25 @@ export const getProjects = async() => {
     }
 
 }
+
+export async function createProject(data: { name: string }) {
+
+    try{
+        const response = await axiosInstance.post(`${API_URL}/`,data);
+        return response.data;
+    }catch(err){
+        const error = err as AxiosError;
+
+        if (!error.response) {
+            console.error("Unknown error:", error);
+            return null;
+        }
+
+        if (error.response.status === 401) {
+            return null;
+        }
+
+        throw error;
+    }
+
+}
