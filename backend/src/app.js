@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 
+const userRoutes = require('./routes/userRoutes');
 
 mongoose.connect('mongodb://admin:strongpassword@10.70.71.118:27017/dev_track_pro?authSource=admin')
     .then(() => console.log("✅ MongoDB connected"))
@@ -16,6 +17,4 @@ app.listen(port, () => {
 });
 
 
-app.get('/', (req, res) => {
-    res.send("Hello from Express!")
-})
+app.use('/users', userRoutes);
