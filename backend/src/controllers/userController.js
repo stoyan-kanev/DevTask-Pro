@@ -1,22 +1,40 @@
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const User = require('../models/User');
+const jwt = require("jsonwebtoken");
+
+const ACCESS_TOKEN_SECRET = 'access_token_secret';
+const REFRESH_SECRET = 'refresh_secret_token'
 
 exports.loginUser = async (req, res) => {
     try {
         const {email, password} = req.body;
         const user = await User.findOne({email})
+
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({message: 'User not found'});
         }
-        if (user) {
-            const isPasswordMatch = await bcrypt.compare(password, user.password);
-            if (isPasswordMatch) {
-                return res.status(200).json({message: "Logged in successfully"});
-            }
-            else{
-                res.status(401).json({message: 'Wrong password'})
-            }
+
+        const isPasswordMatch = await bcrypt.compare(password, user.password);
+        if (isPasswordMatch) {
+
+            const accessToken = jwt.sign({id: user._id}, ACCESS_TOKEN_SECRET, {expiresIn: '15m'});
+            const refreshToken = jwt.sign({id: user._id}, REFRESH_SECRET, {expiresIn: '7d'});
+
+            res.cookie('auth_cookie', accessToken, {
+                maxAge: 15 * 60 * 1000,
+                httpOnly: true,
+                sameSite: 'strict'
+            })
+            res.cookie('refresh_cookie', refreshToken, {
+                maxAge: 7 * 24 * 60 * 60 * 1000,
+                httpOnly: true,
+                sameSite: 'strict'
+            })
+            return res.status(200).json({message: "Logged in successfully"});
+        } else {
+            res.status(401).json({message: 'Wrong password'})
+
         }
     } catch (err) {
         console.error(err);
@@ -44,6 +62,20 @@ exports.registerUser = async (req, res) => {
         });
 
         await user.save();
+
+        const accessToken = jwt.sign({id: user._id}, ACCESS_TOKEN_SECRET, {expiresIn: '15m'});
+        const refreshToken = jwt.sign({id: user._id}, REFRESH_SECRET, {expiresIn: '7d'});
+
+        res.cookie('auth_cookie', accessToken, {
+            maxAge: 15 * 60 * 1000,
+            httpOnly: true,
+            sameSite: 'strict'
+        })
+        res.cookie('refresh_cookie', refreshToken, {
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            httpOnly: true,
+            sameSite: 'strict'
+        })
 
         res.status(201).json({username, email});
     } catch (err) {
