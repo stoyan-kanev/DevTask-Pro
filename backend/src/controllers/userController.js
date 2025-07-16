@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const User = require('../models/User');
 const jwt = require("jsonwebtoken");
-
+const RefreshToken = require('../models/RefreshToken');
 const ACCESS_TOKEN_SECRET = 'access_token_secret';
 const REFRESH_SECRET = 'refresh_secret_token'
 
@@ -20,7 +20,8 @@ exports.loginUser = async (req, res) => {
 
             const accessToken = jwt.sign({id: user._id}, ACCESS_TOKEN_SECRET, {expiresIn: '15m'});
             const refreshToken = jwt.sign({id: user._id}, REFRESH_SECRET, {expiresIn: '7d'});
-
+            const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+            await RefreshToken.create({ token: refreshToken, userId: user._id, expiresAt });
             res.cookie('auth_cookie', accessToken, {
                 maxAge: 15 * 60 * 1000,
                 httpOnly: true,
@@ -65,7 +66,8 @@ exports.registerUser = async (req, res) => {
 
         const accessToken = jwt.sign({id: user._id}, ACCESS_TOKEN_SECRET, {expiresIn: '15m'});
         const refreshToken = jwt.sign({id: user._id}, REFRESH_SECRET, {expiresIn: '7d'});
-
+        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+        await RefreshToken.create({ token: refreshToken, userId: user._id, expiresAt });
         res.cookie('auth_cookie', accessToken, {
             maxAge: 15 * 60 * 1000,
             httpOnly: true,
@@ -84,3 +86,21 @@ exports.registerUser = async (req, res) => {
     }
 }
 
+exports.refreshToken = async (req, res) => {
+
+    const {refresh_cookie} = req.cookies;
+    console.log(refresh_cookie);
+    let payload;
+    try {
+        payload = jwt.verify(refresh_cookie, REFRESH_SECRET);
+    } catch (err) {
+        return res.status(401).json({ message: 'Invalid or expired refresh token' });
+    }
+    const storedToken = await RefreshToken.findOne({ token: refresh_cookie });
+    if (!storedToken || storedToken.expiresAt < Date.now()) {
+        return res.status(401).json({ message: 'Refresh token expired or not found' });
+    }
+    const newAccessToken = jwt.sign({ id: payload.id }, ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
+    res.cookie('auth_cookie', newAccessToken, { httpOnly: true, maxAge: 15 * 60 * 1000, sameSite: 'strict' });
+    res.status(200).json({ message: 'Access token refreshed' })
+}
