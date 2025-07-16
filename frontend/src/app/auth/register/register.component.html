@@ -1,0 +1,54 @@
+<div class="form-container">
+  <h2 class="form-title">Register</h2>
+  <form [formGroup]="registerForm" (ngSubmit)="register()">
+
+    <!-- Email -->
+    <div class="form-group">
+      <input formControlName="email" type="email" placeholder="Email" />
+      @if (email.invalid && (email.dirty || email.touched)) {
+        <div class="error">
+          @if (email.errors?.['required']) { <div>Email is required.</div> }
+          @if (email.errors?.['email']) { <div>Please enter a valid email.</div> }
+        </div>
+      }
+    </div>
+
+    <!-- Username -->
+    <div class="form-group">
+      <input formControlName="username" type="text" placeholder="Username" />
+      @if (username.invalid && (username.dirty || username.touched)) {
+        <div class="error">
+          @if (username.errors?.['required']) { <div>Username is required.</div> }
+        </div>
+      }
+    </div>
+
+    <!-- Password -->
+    <div class="form-group">
+      <input formControlName="password" type="password" placeholder="Password" />
+      @if (password.errors?.['weakPassword'] && (password.dirty || password.touched)) {
+        <div class="error">
+          @if (!password.errors?.['weakPassword'].isLongEnough) { <div>At least 8 characters</div> }
+          @if (!password.errors?.['weakPassword'].hasUpperCase) { <div>One uppercase letter</div> }
+          @if (!password.errors?.['weakPassword'].hasLowerCase) { <div>One lowercase letter</div> }
+          @if (!password.errors?.['weakPassword'].hasDigit) { <div>One digit</div> }
+          @if (!password.errors?.['weakPassword'].hasSpecial) { <div>One special character</div> }
+        </div>
+      }
+    </div>
+
+    <!-- Confirm Password -->
+    <div class="form-group">
+      <input formControlName="confirmPassword" type="password" placeholder="Confirm Password" />
+      @if ((confirmPassword.dirty || confirmPassword.touched) && registerForm.errors?.['passwordsMismatch']) {
+        <div class="error">Passwords do not match.</div>
+      }
+    </div>
+
+    <button type="submit" [disabled]="registerForm.invalid">Register</button>
+
+    <div style="text-align: center; margin-top: 1rem;">
+      <a routerLink="/login">Already have an account? Login</a>
+    </div>
+  </form>
+</div>

@@ -6,6 +6,8 @@ const RefreshToken = require('../models/RefreshToken');
 const ACCESS_TOKEN_SECRET = 'access_token_secret';
 const REFRESH_SECRET = 'refresh_secret_token'
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 exports.loginUser = async (req, res) => {
     try {
         const {email, password} = req.body;
@@ -25,12 +27,14 @@ exports.loginUser = async (req, res) => {
             res.cookie('auth_cookie', accessToken, {
                 maxAge: 15 * 60 * 1000,
                 httpOnly: true,
-                sameSite: 'strict'
-            })
+                sameSite: isProduction ? 'strict' : 'lax',
+                secure: isProduction,
+            });
             res.cookie('refresh_cookie', refreshToken, {
                 maxAge: 7 * 24 * 60 * 60 * 1000,
                 httpOnly: true,
-                sameSite: 'strict'
+                sameSite: isProduction ? 'strict' : 'lax',
+                secure: isProduction,
             })
             return res.status(200).json({message: "Logged in successfully"});
         } else {
@@ -71,12 +75,14 @@ exports.registerUser = async (req, res) => {
         res.cookie('auth_cookie', accessToken, {
             maxAge: 15 * 60 * 1000,
             httpOnly: true,
-            sameSite: 'strict'
+            sameSite: isProduction ? 'strict' : 'lax',
+            secure: isProduction,
         })
         res.cookie('refresh_cookie', refreshToken, {
             maxAge: 7 * 24 * 60 * 60 * 1000,
             httpOnly: true,
-            sameSite: 'strict'
+            sameSite: isProduction ? 'strict' : 'lax',
+            secure: isProduction,
         })
 
         res.status(201).json({username, email});
